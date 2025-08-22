@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment History</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    font-family: 'Rajdhani', sans-serif;
+    background: #0e1e2e;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    padding-top: 50px;
+    min-height: 100vh;
+  }
+
+  .container {
+    width: 95%;
+    max-width: 620px;
+    padding: 35px 25px;
+    background: rgba(0,255,240,0.05);
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(0,255,240,0.2);
+  }
+
+  .header {
+    text-align: center;
+    font-size: 36px;
+    font-weight: bold;
+    color: #00FFC0;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px rgba(0,255,240,0.5);
+  }
+
+  .history-list {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .history-list li {
+    background: #112233;
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: grab;
+    font-weight: bold;
+    transition: transform 0.15s ease;
+  }
+
+  .history-list li.dragging {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+
+  .left-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .left-info input {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    background: rgba(0,255,240,0.1);
+    color: #00FFC0;
+    font-weight: bold;
+    width: 120px;
+    outline: none;
+  }
+
+  .payment-text {
+    color: #00FF00;
+    font-weight: bold;
+  }
+
+  .right-balance {
+    font-size: 22px;
+    color: #00FFC0;
+    font-weight: bold;
+  }
+
+  .add-btn {
+    width: 100%;
+    margin-top: 18px;
+    background: #00FFC0;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-weight: bold;
+    color: #001020;
+    cursor: pointer;
+    font-size: 17px;
+    transition: 0.3s;
+  }
+
+  .add-btn:hover {
+    background: #00e0b0;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">Payment History</div>
+  <ul class="history-list" id="historyList"></ul>
+  <button class="add-btn" onclick="addPayment()">Add Payment</button>
+</div>
+
+<script>
+  // Fixed amounts as you provide
+  const fixedAmounts = [300, 500, 600, 800, 1000, 1500, 2000];
+
+  let paymentData = [
+    { amount:300, weekday:'Monday', date:'18/08/2025' },
+    { amount:500, weekday:'Tuesday', date:'19/08/2025' },
+    { amount:600, weekday:'Wednesday', date:'20/08/2025' },
+    { amount:800, weekday:'Thursday', date:'21/08/2025' },
+    { amount:1000, weekday:'Friday', date:'22/08/2025' },
+    { amount:1500, weekday:'Saturday', date:'23/08/2025' },
+    { amount:2000, weekday:'Sunday', date:'24/08/2025' },
+    { amount:300, weekday:'Monday', date:'25/08/2025' },
+    { amount:500, weekday:'Tuesday', date:'26/08/2025' },
+    { amount:600, weekday:'Wednesday', date:'27/08/2025' }
+  ];
+
+  const historyList = document.getElementById('historyList');
+  let draggedItem = null;
+
+  function renderPaymentHistory() {
+    historyList.innerHTML = '';
+    paymentData.forEach((payment,index)=>{
+      const li = document.createElement('li');
+      li.draggable = true;
+
+      const leftDiv = document.createElement('div');
+      leftDiv.className = 'left-info';
+
+      const weekdayInput = document.createElement('input');
+      weekdayInput.type='text';
+      weekdayInput.value = payment.weekday;
+      weekdayInput.oninput = e => payment.weekday = e.target.value;
+
+      const dateInput = document.createElement('input');
+      dateInput.type='text';
+      dateInput.value = payment.date;
+      dateInput.oninput = e => payment.date = e.target.value;
+
+      const paymentText = document.createElement('span');
+      paymentText.className = 'payment-text';
+      paymentText.textContent = 'Payment Successful';
+
+      leftDiv.appendChild(weekdayInput);
+      leftDiv.appendChild(dateInput);
+      leftDiv.appendChild(paymentText);
+
+      const rightDiv = document.createElement('div');
+      rightDiv.className = 'right-balance';
+      rightDiv.textContent = payment.amount + ' Tk';
+
+      li.appendChild(leftDiv);
+      li.appendChild(rightDiv);
+
+      // Drag events
+      li.addEventListener('dragstart',()=>{ draggedItem=index; li.classList.add('dragging'); });
+      li.addEventListener('dragend',()=>{ draggedItem=null; li.classList.remove('dragging'); });
+      li.addEventListener('dragover',e=>e.preventDefault());
+      li.addEventListener('drop',e=>{
+        e.preventDefault();
+        const targetIndex = Array.from(historyList.children).indexOf(li);
+        if(draggedItem===null || draggedItem===targetIndex) return;
+        const movedItem = paymentData.splice(draggedItem,1)[0];
+        paymentData.splice(targetIndex,0,movedItem);
+        renderPaymentHistory();
+      });
+
+      historyList.appendChild(li);
+    });
+  }
+
+  function addPayment(){
+    paymentData.push({ amount:1000, weekday:'Monday', date:'01/01/2026' });
+    renderPaymentHistory();
+  }
+
+  renderPaymentHistory();
+</script>
+</body>
+</html>
